@@ -476,6 +476,7 @@ export function DeedOfAssignment({ data, totals }: { data: DocumentFormData; tot
 
   const priceInFigures = formatNaira(totals.plotPrice);
   const priceInWords = amountInWords(totals.plotPrice);
+  const priceDisplay = `${priceInFigures}\u00A0(${priceInWords})`;
   
   const formattedDay = data.day.match(/\d+$/) 
     ? (() => {
@@ -616,7 +617,7 @@ export function DeedOfAssignment({ data, totals }: { data: DocumentFormData; tot
         <Text style={styles.sectionHeading}>2.0. NOW THIS DEED WITNESSETH as follows:</Text>
         
         <Text style={styles.paragraphNoIndent}>
-          In pursuance of the said agreement and in consideration of the sum of <Text style={styles.bold}>{priceInFigures} ({priceInWords})</Text> only paid by the Assignees to the Assignor (the receipt whereof the Assignor hereby acknowledges) the Assignor being the <Text style={styles.bold}>BENEFICIAL OWNER</Text> hereby sells, conveys and/or assigns unto the Assignees <Text style={styles.bold}>ALL THAT {plotsTextAllCaps} OF FARMLAND</Text> measuring <Text style={styles.bold}>{sqmts.toLocaleString()} square metres</Text> lying, being and situate at Iloti Family farmland, Orubo/Erilobi Alaye Village, Awori, Ago-Iwoye, Ijebu North Local Government Area of Ogun State (hereinafter referred to as <Text style={styles.italic}>"the Assigned Property"</Text>) with all rights and things appurtenant to it <Text style={styles.bold}>TO HOLD</Text> the same unto the Assignees free from encumbrance.
+          In pursuance of the said agreement and in consideration of the sum of <Text style={styles.bold}>{priceDisplay}</Text> only paid by the Assignees to the Assignor (the receipt whereof the Assignor hereby acknowledges) the Assignor being the <Text style={styles.bold}>BENEFICIAL OWNER</Text> hereby sells, conveys and/or assigns unto the Assignees <Text style={styles.bold}>ALL THAT {plotsTextAllCaps} OF FARMLAND</Text> measuring <Text style={styles.bold}>{sqmts.toLocaleString()} square metres</Text> lying, being and situate at Iloti Family farmland, Orubo/Erilobi Alaye Village, Awori, Ago-Iwoye, Ijebu North Local Government Area of Ogun State (hereinafter referred to as <Text style={styles.italic}>"the Assigned Property"</Text>) with all rights and things appurtenant to it <Text style={styles.bold}>TO HOLD</Text> the same unto the Assignees free from encumbrance.
         </Text>
 
         <Text style={styles.sectionHeading}>3.0. THE ASSIGNOR HEREBY COVENANTS WITH THE ASSIGNEES as follows:</Text>
