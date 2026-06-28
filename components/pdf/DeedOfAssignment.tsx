@@ -10,6 +10,15 @@ const styles = StyleSheet.create({
     lineHeight: 1.6,
     color: '#000000',
   },
+  executionPage: {
+    paddingTop: 40,
+    paddingBottom: 35,
+    paddingHorizontal: 72,
+    fontFamily: 'Times-Roman',
+    fontSize: 11,
+    lineHeight: 1.5,
+    color: '#000000',
+  },
   coverPage: {
     padding: 24,
     height: '100%',
@@ -206,8 +215,8 @@ const styles = StyleSheet.create({
   signLine: {
     borderBottomWidth: 1,
     borderBottomColor: '#000000',
-    width: '100%',
-    marginTop: 35,
+    width: '105%',
+    marginTop: 20,
     marginBottom: 4,
   },
   signLabel: {
@@ -224,9 +233,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   redWaxCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: '#d32f2f',
   },
   assigneeSignRow: {
@@ -254,14 +263,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   witnessSection: {
-    marginTop: 16,
-    fontSize: 10,
+    marginTop: 10,
+    fontSize: 9.5,
   },
   witnessLine: {
     marginVertical: 3,
   },
   consentBox: {
-    marginTop: 24,
+    marginTop: 10,
     alignItems: 'center',
     width: '100%',
   },
@@ -348,8 +357,13 @@ const StarburstSeal = ({ size = 70 }: { size?: number }) => {
   );
 };
 
-// Convert number to uppercase words helper
-function getPlotsText(num: number): string {
+function getPlotsTextTitleCase(num: number): string {
+  const words = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+  const word = words[num] || String(num);
+  return `${word} (${num}) ${num === 1 ? 'Plot' : 'Plots'}`;
+}
+
+function getPlotsTextAllCaps(num: number): string {
   const words = ["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN"];
   const word = words[num] || String(num).toUpperCase();
   return `${word} (${num}) ${num === 1 ? 'PLOT' : 'PLOTS'}`;
@@ -360,7 +374,7 @@ function formatNaira(amount: number): string {
     style: 'currency',
     currency: 'NGN',
     minimumFractionDigits: 2
-  }).format(amount).replace('NGN', '₦');
+  }).format(amount).replace('NGN', 'N');
 }
 
 function amountInWords(num: number): string {
@@ -423,7 +437,8 @@ export function DeedOfAssignment({ data, totals }: { data: DocumentFormData; tot
   const addressUpper = data.clientAddress.toUpperCase().trim();
   
   const sqmts = 500 * data.numberOfPlots;
-  const plotsText = getPlotsText(data.numberOfPlots);
+  const plotsTextTitleCase = getPlotsTextTitleCase(data.numberOfPlots);
+  const plotsTextAllCaps = getPlotsTextAllCaps(data.numberOfPlots);
 
   const priceInFigures = formatNaira(totals.plotPrice);
   const priceInWords = amountInWords(totals.plotPrice);
@@ -472,7 +487,7 @@ export function DeedOfAssignment({ data, totals }: { data: DocumentFormData; tot
               <View style={styles.coverPropertyBlock}>
                 <Text style={styles.coverLabel}>In Respect Of</Text>
                 <Text style={styles.coverPropertyText}>
-                  {plotsText} of Farmland Measuring {sqmts.toLocaleString()} Sqmts at Iloti Family Farmland at Orubo/Erilobi Alaye Village, Awori, Ago-Iwoye, in the Ijebu North Local Government Area, Ogun State.
+                  {plotsTextAllCaps} of Farmland Measuring {sqmts.toLocaleString()} Sqmts at Iloti Family Farmland at Orubo/Erilobi Alaye Village, Awori, Ago-Iwoye, in the Ijebu North Local Government Area, Ogun State.
                 </Text>
               </View>
               
@@ -563,7 +578,7 @@ export function DeedOfAssignment({ data, totals }: { data: DocumentFormData; tot
             <View style={styles.clauseRow}>
               <Text style={styles.clauseIndex}>iii.</Text>
               <Text style={styles.clauseText}>
-                The Assignees being desirous of acquiring interest in <Text style={styles.bold}>{plotsText}</Text> out of the large expanse of farmland sold by the Iloti Family to the Assignor, have offered to purchase and the Assignor has agreed to sell and/or assign same to the Assignees subject to the terms and conditions hereinafter appearing.
+                The Assignees being desirous of acquiring interest in <Text style={styles.bold}>{plotsTextTitleCase}</Text> out of the large expanse of farmland sold by the Iloti Family to the Assignor, have offered to purchase and the Assignor has agreed to sell and/or assign same to the Assignees subject to the terms and conditions hereinafter appearing.
               </Text>
             </View>
           </View>
@@ -577,7 +592,7 @@ export function DeedOfAssignment({ data, totals }: { data: DocumentFormData; tot
         <Text style={styles.sectionHeading}>2.0. NOW THIS DEED WITNESSETH as follows:</Text>
         
         <Text style={styles.paragraphNoIndent}>
-          In pursuance of the said agreement and in consideration of the sum of <Text style={styles.bold}>{priceInFigures} ({priceInWords})</Text> only paid by the Assignees to the Assignor (the receipt whereof the Assignor hereby acknowledges) the Assignor being the <Text style={styles.bold}>BENEFICIAL OWNER</Text> hereby sells, conveys and/or assigns unto the Assignees <Text style={styles.bold}>ALL THAT {plotsText.toUpperCase()} OF FARMLAND</Text> measuring <Text style={styles.bold}>{sqmts.toLocaleString()} square metres</Text> lying, being and situate at Iloti Family farmland, Orubo/Erilobi Alaye Village, Awori, Ago-Iwoye, Ijebu North Local Government Area of Ogun State (hereinafter referred to as <Text style={styles.italic}>"the Assigned Property"</Text>) with all rights and things appurtenant to it <Text style={styles.bold}>TO HOLD</Text> the same unto the Assignees free from encumbrance.
+          In pursuance of the said agreement and in consideration of the sum of <Text style={styles.bold}>{priceInFigures} ({priceInWords})</Text> only paid by the Assignees to the Assignor (the receipt whereof the Assignor hereby acknowledges) the Assignor being the <Text style={styles.bold}>BENEFICIAL OWNER</Text> hereby sells, conveys and/or assigns unto the Assignees <Text style={styles.bold}>ALL THAT {plotsTextAllCaps} OF FARMLAND</Text> measuring <Text style={styles.bold}>{sqmts.toLocaleString()} square metres</Text> lying, being and situate at Iloti Family farmland, Orubo/Erilobi Alaye Village, Awori, Ago-Iwoye, Ijebu North Local Government Area of Ogun State (hereinafter referred to as <Text style={styles.italic}>"the Assigned Property"</Text>) with all rights and things appurtenant to it <Text style={styles.bold}>TO HOLD</Text> the same unto the Assignees free from encumbrance.
         </Text>
 
         <Text style={styles.sectionHeading}>3.0. THE ASSIGNOR HEREBY COVENANTS WITH THE ASSIGNEES as follows:</Text>
@@ -607,7 +622,7 @@ export function DeedOfAssignment({ data, totals }: { data: DocumentFormData; tot
       </Page>
 
       {/* PAGE 4: BODY PAGE 3 / SIGNATURES */}
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.executionPage}>
         <Text style={styles.pageNumber}>Page 3 of 3</Text>
 
         <Text style={[styles.paragraphNoIndent, { marginBottom: 16 }]}>
@@ -620,8 +635,8 @@ export function DeedOfAssignment({ data, totals }: { data: DocumentFormData; tot
           </Text>
 
           {/* Center Red Wax Stamp */}
-          <View style={{ alignItems: 'center', marginVertical: 14 }}>
-            <StarburstSeal size={80} />
+          <View style={{ alignItems: 'center', marginVertical: 8 }}>
+            <StarburstSeal size={65} />
           </View>
 
           <View style={styles.signGroupRow} wrap={false}>

@@ -301,7 +301,13 @@ const StarburstSeal = ({ size = 70 }: { size?: number }) => {
   );
 };
 
-function getPlotsText(num: number): string {
+function getPlotsTextTitleCase(num: number): string {
+  const words = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+  const word = words[num] || String(num);
+  return `${word} (${num}) ${num === 1 ? 'Plot' : 'Plots'}`;
+}
+
+function getPlotsTextAllCaps(num: number): string {
   const words = ["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN"];
   const word = words[num] || String(num).toUpperCase();
   return `${word} (${num}) ${num === 1 ? 'PLOT' : 'PLOTS'}`;
@@ -312,7 +318,7 @@ function formatNaira(amount: number): string {
     style: 'currency',
     currency: 'NGN',
     minimumFractionDigits: 2
-  }).format(amount).replace('NGN', '₦');
+  }).format(amount).replace('NGN', 'N');
 }
 
 function amountInWords(num: number): string {
@@ -373,7 +379,8 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
   const assignee1Upper = data.assignee1Name.toUpperCase().trim();
   const assignee2Upper = data.assignee2Name?.toUpperCase().trim();
   const addressUpper = data.clientAddress.toUpperCase().trim();
-  const plotsText = getPlotsText(data.numberOfPlots);
+  const plotsTextTitleCase = getPlotsTextTitleCase(data.numberOfPlots);
+  const plotsTextAllCaps = getPlotsTextAllCaps(data.numberOfPlots);
   const dateStr = `${data.day} day of ${data.month}, ${data.year}`;
 
   const plotPriceFigures = formatNaira(totals.plotPrice);
@@ -433,7 +440,7 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
               <View style={styles.coverPropertyBlock}>
                 <Text style={styles.coverLabel}>In Respect Of</Text>
                 <Text style={styles.coverPropertyText}>
-                  Management/Ownership of {plotsText} of Farmland at Iloti Family Farmland Orubo/Erilobi Alaye Village, Awori, Ago Iwoye in the Ijebu North Local Government Area, Ogun State.
+                  Management/Ownership of {plotsTextAllCaps} of Farmland at Iloti Family Farmland Orubo/Erilobi Alaye Village, Awori, Ago Iwoye in the Ijebu North Local Government Area, Ogun State.
                 </Text>
               </View>
               
@@ -514,7 +521,7 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
             <View style={styles.clauseRow}>
               <Text style={styles.clauseIndex}>iii.</Text>
               <Text style={styles.clauseText}>
-                The Individuals herein being desirous of acquiring <Text style={styles.bold}>{plotsText}</Text> of Land out of the aforesaid expanse of land for farming purpose have offered to buy and the Company has agreed to sell same subject to the terms and conditions hereinafter appearing.
+                The Individuals herein being desirous of acquiring <Text style={styles.bold}>{plotsTextTitleCase}</Text> of Land out of the aforesaid expanse of land for farming purpose have offered to buy and the Company has agreed to sell same subject to the terms and conditions hereinafter appearing.
               </Text>
             </View>
           </View>
@@ -532,7 +539,7 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
           <View style={styles.clauseRow}>
             <Text style={styles.clauseIndex}>1.</Text>
             <Text style={styles.clauseText}>
-              The Company sells and the Individuals buy all that <Text style={styles.bold}>{plotsText}</Text> of Land measuring 500 square meters lying, being and situate at Iloti Family Farmland, Orubo/Erilobi Alaye Village, Awori, Ago-Iwoye, Ijebu North Local Government Area of Ogun State of Nigeria for a total sum of <Text style={styles.bold}>{plotPriceFigures} ({plotPriceWords})</Text> only hereinafter referred to as the <Text style={styles.italic}>"purchase price"</Text> for farming purpose only.
+              The Company sells and the Individuals buy all that <Text style={styles.bold}>{plotsTextTitleCase}</Text> of Land measuring 500 square meters lying, being and situate at Iloti Family Farmland, Orubo/Erilobi Alaye Village, Awori, Ago-Iwoye, Ijebu North Local Government Area of Ogun State of Nigeria for a total sum of <Text style={styles.bold}>{plotPriceFigures} ({plotPriceWords})</Text> only hereinafter referred to as the <Text style={styles.italic}>"purchase price"</Text> for farming purpose only.
             </Text>
           </View>
 
@@ -551,14 +558,14 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
               <View style={[styles.clauseRow, { marginLeft: 24 }]}>
                 <Text style={[styles.clauseIndex, { width: 20 }]}>(i)</Text>
                 <Text style={styles.clauseText}>
-                  <Text style={styles.bold}>{plotPriceFigures}</Text> being the full payment of the amount of the Pineapple farmland purchase, upon the due execution of this agreement.
+                  <Text style={styles.bold}>{plotPriceFigures}</Text> being the discounted price of the amount of the Pineapple farmland purchase, upon the due execution of this agreement.
                 </Text>
               </View>
 
               <View style={[styles.clauseRow, { marginLeft: 24 }]}>
                 <Text style={[styles.clauseIndex, { width: 20 }]}>(ii)</Text>
                 <Text style={styles.clauseText}>
-                  Upon the payment of <Text style={styles.bold}>{plotPriceFigures}</Text> being for the said pineapple farmland, the Company shall on behalf of the Individuals clear the <Text style={styles.bold}>{plotsText}</Text> of Land, plant crops (pineapple) thereon as it deems fit and manage same for a minimum period of five (5) years.
+                  Upon the payment of <Text style={styles.bold}>{plotPriceFigures}</Text> being for the said pineapple farmland, the Company shall on behalf of the Individuals clear the <Text style={styles.bold}>{plotsTextTitleCase}</Text> of Land, plant crops (pineapple) thereon as it deems fit and manage same for a minimum period of five (5) years.
                 </Text>
               </View>
             </>
@@ -575,7 +582,7 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
               <View style={[styles.clauseRow, { marginLeft: 24 }]}>
                 <Text style={[styles.clauseIndex, { width: 20 }]}>(ii)</Text>
                 <Text style={styles.clauseText}>
-                  Upon the full payment of <Text style={styles.bold}>{plotPriceFigures}</Text> being for the said pineapple farmland, the Company shall on behalf of the Individuals clear the <Text style={styles.bold}>{plotsText}</Text> of Land, plant crops (pineapple) thereon as it deems fit and manage same for a minimum period of five (5) years.
+                  Upon the full payment of <Text style={styles.bold}>{plotPriceFigures}</Text> being for the said pineapple farmland, the Company shall on behalf of the Individuals clear the <Text style={styles.bold}>{plotsTextTitleCase}</Text> of Land, plant crops (pineapple) thereon as it deems fit and manage same for a minimum period of five (5) years.
                 </Text>
               </View>
             </>
@@ -614,7 +621,7 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
               <View style={[styles.clauseRow, { marginTop: 4, paddingLeft: 0 }]}>
                 <Text style={[styles.clauseIndex, { width: 14 }]}>i.</Text>
                 <Text style={styles.clauseText}>
-                  That the purchase price shall cover the <Text style={styles.bold}>{plotsText}</Text> of Pineapple Farmland, farm management. For Deed of Assignment, additional amount of <Text style={styles.bold}>{formatNaira(100000)}</Text> per plot. For Perimeter Survey, <Text style={styles.bold}>{formatNaira(250000)}</Text> per plot.
+                  That the purchase price shall cover the <Text style={styles.bold}>{plotsTextTitleCase}</Text> of Pineapple Farmland, farm management. For Deed of Assignment, additional amount of <Text style={styles.bold}>{formatNaira(100000)}</Text> per plot. For Perimeter Survey, <Text style={styles.bold}>{formatNaira(250000)}</Text> per plot.
                 </Text>
               </View>
               <View style={styles.clauseRow}>

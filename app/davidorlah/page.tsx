@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { pdf } from "@react-pdf/renderer";
+import { pdf, PDFViewer } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 
 // Import PDF templates
@@ -57,7 +57,7 @@ function formatNaira(amount: number): string {
     style: 'currency',
     currency: 'NGN',
     minimumFractionDigits: 2
-  }).format(amount).replace('NGN', '₦');
+  }).format(amount).replace('NGN', 'N');
 }
 
 export default function DavidorlahGenerator() {
@@ -82,6 +82,7 @@ export default function DavidorlahGenerator() {
   const [docsReady, setDocsReady] = useState(false);
   const [deedBlob, setDeedBlob] = useState<Blob | null>(null);
   const [farmBlob, setFarmBlob] = useState<Blob | null>(null);
+  const [activeTab, setActiveTab] = useState<'summary' | 'deed' | 'agreement'>('summary');
 
   // Set default current date on mount & ensure client-side rendering
   useEffect(() => {
@@ -124,6 +125,7 @@ export default function DavidorlahGenerator() {
     setDocsReady(false);
     setDeedBlob(null);
     setFarmBlob(null);
+    setActiveTab('summary');
   };
 
   // Generate Handler: Compiles PDF layouts into Blobs in parallel
@@ -199,28 +201,22 @@ export default function DavidorlahGenerator() {
       {/* Header Navigation */}
       <header className="border-b border-zinc-900 bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-40 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            {/* Logo pulled from public/images/davidorlah_logo.png */}
-            <div className="relative w-10 h-10 bg-zinc-950 border border-zinc-900 rounded-xl overflow-hidden flex items-center justify-center">
+          <div className="flex items-center gap-5">
+            {/* Horizontal Logo Container with proper aspect ratio */}
+            <Link href="/" className="relative w-36 h-9 hover:opacity-90 transition-opacity">
               <Image 
                 src="/images/davidorlah_logo.png" 
                 alt="Davidorlah Farms Logo" 
                 fill 
-                className="object-contain p-1"
+                className="object-contain object-left"
                 priority
               />
-            </div>
+            </Link>
             
-            {/* Breadcrumb path */}
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wider text-zinc-500">
-                <Link href="/" className="hover:text-zinc-300 transition-colors">Maadan Tools</Link>
-                <span>/</span>
-                <span className="text-zinc-400">Davidorlah Farms</span>
-              </div>
-              <h2 className="font-semibold text-sm text-zinc-200">
-                Farms Document Generator
-              </h2>
+            {/* Clean Breadcrumb/Subtitle indicator */}
+            <div className="hidden sm:flex items-center gap-3 text-xs font-mono text-zinc-800">
+              <span>|</span>
+              <span className="uppercase tracking-[0.2em] text-[9.5px] text-zinc-500 font-semibold">Document Generator</span>
             </div>
           </div>
           
@@ -422,63 +418,134 @@ export default function DavidorlahGenerator() {
                 </div>
               </div>
             </section>
-
           </div>
 
           {/* Right Column (45% / Sticky Summary Pane) */}
-          <aside className="lg:sticky lg:top-28 h-fit flex flex-col gap-6">
+          <aside className="lg:sticky lg:top-24 h-fit flex flex-col gap-6 w-full">
             
+            {/* Toggle Tabs */}
+            {isClient && docsReady && (
+              <div className="flex bg-zinc-900/60 border border-zinc-850 p-1.5 rounded-2xl gap-1.5 w-full">
+                {(['summary', 'deed', 'agreement'] as const).map(tab => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveTab(tab)}
+                    className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all ${
+                      activeTab === tab 
+                        ? 'bg-[#7AB648] text-black font-extrabold shadow-[0_0_12px_rgba(122,182,72,0.15)]'
+                        : 'text-zinc-400 hover:text-zinc-200 bg-transparent'
+                    }`}
+                  >
+                    {tab === 'summary' ? 'Summary' : tab === 'deed' ? 'Deed Preview' : 'Agreement Preview'}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Live Transaction Card */}
-            <div className="bg-[#1A1A1A] border border-zinc-800 rounded-3xl p-8 flex flex-col gap-6 shadow-2xl relative overflow-hidden">
+            <div className="bg-[#1A1A1A] border border-zinc-800 rounded-3xl p-8 flex flex-col gap-6 shadow-2xl relative overflow-hidden w-full">
               
               <div className="absolute inset-0 bg-[radial-gradient(250px_circle_at_50%_-10%,rgba(122,182,72,0.035),transparent)] pointer-events-none" />
 
-              <h3 className="font-mono text-[10px] font-bold tracking-widest text-zinc-500 uppercase border-b border-zinc-800 pb-3">
-                TRANSACTION SUMMARY
-              </h3>
+              {activeTab === 'summary' ? (
+                <>
+                  <h3 className="font-mono text-[10px] font-bold tracking-widest text-zinc-550 uppercase border-b border-zinc-800 pb-3">
+                    TRANSACTION SUMMARY
+                  </h3>
 
-              <div className="flex flex-col gap-4 font-mono text-[13px]">
-                <div className="flex justify-between items-center text-zinc-400">
-                  <span>Plots</span>
-                  <span className="text-zinc-200 font-bold">{numberOfPlots}</span>
-                </div>
-                
-                <div className="h-[1px] bg-zinc-800/60" />
-                
-                <div className="flex justify-between items-center text-zinc-400">
-                  <span>Plot Price</span>
-                  <span className="text-zinc-200">{formatNaira(totals.plotPrice)}</span>
-                </div>
+                  <div className="flex flex-col gap-4 font-mono text-[13px]">
+                    <div className="flex justify-between items-center text-zinc-400">
+                      <span>Plots</span>
+                      <span className="text-zinc-200 font-bold">{numberOfPlots}</span>
+                    </div>
+                    
+                    <div className="h-[1px] bg-zinc-800/60" />
+                    
+                    <div className="flex justify-between items-center text-zinc-400">
+                      <span>Plot Price</span>
+                      <span className="text-zinc-200">{formatNaira(totals.plotPrice)}</span>
+                    </div>
 
-                <div className="flex justify-between items-center text-zinc-400">
-                  <span>Deed of Assignment</span>
-                  <span className="text-zinc-200">{formatNaira(totals.deedFee)}</span>
-                </div>
+                    <div className="flex justify-between items-center text-zinc-400">
+                      <span>Deed of Assignment</span>
+                      <span className="text-zinc-200">{formatNaira(totals.deedFee)}</span>
+                    </div>
 
-                <div className="flex justify-between items-center text-zinc-400">
-                  <span>Perimeter Survey</span>
-                  <span className="text-zinc-200">{formatNaira(totals.surveyFee)}</span>
-                </div>
+                    <div className="flex justify-between items-center text-zinc-400">
+                      <span>Perimeter Survey</span>
+                      <span className="text-zinc-200">{formatNaira(totals.surveyFee)}</span>
+                    </div>
 
-                <div className="h-[1px] bg-zinc-800/60" />
+                    <div className="h-[1px] bg-zinc-800/60" />
 
-                <div className="flex justify-between items-center text-zinc-150 font-bold text-sm">
-                  <span>Total Payable</span>
-                  <span className="text-white text-base">{formatNaira(totals.totalPayable)}</span>
-                </div>
-              </div>
+                    <div className="flex justify-between items-center text-zinc-150 font-bold text-sm">
+                      <span>Total Payable</span>
+                      <span className="text-white text-base">{formatNaira(totals.totalPayable)}</span>
+                    </div>
+                  </div>
 
-              {/* Annual ROI estimations */}
-              <div className="bg-[#0A0A0A]/40 border border-zinc-850 rounded-2xl p-5 flex flex-col gap-3 font-mono text-[12px]">
-                <div className="flex justify-between items-center">
-                  <span className="text-zinc-500">Annual ROI (36%)</span>
-                  <span className="text-[#7AB648] font-semibold">{formatNaira(totals.annualROI)}</span>
+                  {/* Annual ROI estimations */}
+                  <div className="bg-[#0A0A0A]/40 border border-zinc-850 rounded-2xl p-5 flex flex-col gap-3 font-mono text-[12px]">
+                    <div className="flex justify-between items-center">
+                      <span className="text-zinc-500">Annual ROI (36%)</span>
+                      <span className="text-[#7AB648] font-semibold">{formatNaira(totals.annualROI)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-zinc-500">ROI over 5 years</span>
+                      <span className="text-[#7AB648] font-semibold">{formatNaira(fiveYearRoi)}</span>
+                    </div>
+                  </div>
+                </>
+              ) : activeTab === 'deed' ? (
+                <div className="flex flex-col gap-3">
+                  <h3 className="font-mono text-[10px] font-bold tracking-widest text-zinc-550 uppercase border-b border-zinc-800 pb-3">
+                    DEED OF ASSIGNMENT PREVIEW
+                  </h3>
+                  {isClient && (
+                    <PDFViewer className="w-full h-[360px] border border-zinc-850 rounded-2xl overflow-hidden bg-zinc-950" showToolbar={false}>
+                      <DeedOfAssignment 
+                        data={{
+                          assignee1Name,
+                          assignee2Name: assignee2Name.trim() ? assignee2Name : undefined,
+                          clientAddress,
+                          numberOfPlots,
+                          paymentType,
+                          depositPaid: paymentType === "installment" ? Number(depositPaid) : undefined,
+                          day,
+                          month,
+                          year
+                        }}
+                        totals={totals}
+                      />
+                    </PDFViewer>
+                  )}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-zinc-500">ROI over 5 years</span>
-                  <span className="text-[#7AB648] font-semibold">{formatNaira(fiveYearRoi)}</span>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <h3 className="font-mono text-[10px] font-bold tracking-widest text-zinc-550 uppercase border-b border-zinc-800 pb-3">
+                    FARMLAND AGREEMENT PREVIEW
+                  </h3>
+                  {isClient && (
+                    <PDFViewer className="w-full h-[360px] border border-zinc-850 rounded-2xl overflow-hidden bg-zinc-950" showToolbar={false}>
+                      <FarmManagementAgreement 
+                        data={{
+                          assignee1Name,
+                          assignee2Name: assignee2Name.trim() ? assignee2Name : undefined,
+                          clientAddress,
+                          numberOfPlots,
+                          paymentType,
+                          depositPaid: paymentType === "installment" ? Number(depositPaid) : undefined,
+                          day,
+                          month,
+                          year
+                        }}
+                        totals={totals}
+                      />
+                    </PDFViewer>
+                  )}
                 </div>
-              </div>
+              )}
 
               {/* Generate button action */}
               <button
