@@ -462,7 +462,7 @@ function amountInWords(num: number): string {
     result += convertHelper(remainder);
   }
   
-  return result.trim() + " Naira";
+  return result.trim().replace(/^-/, '').trim() + " Naira";
 }
 
 export function DeedOfAssignment({ data, totals }: { data: DocumentFormData; totals: Totals }) {

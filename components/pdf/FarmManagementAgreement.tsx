@@ -384,7 +384,7 @@ function amountInWords(num: number): string {
     result += convertHelper(remainder);
   }
   
-  return result.trim() + " Naira";
+  return result.trim().replace(/^-/, '').trim() + " Naira";
 }
 
 export function FarmManagementAgreement({ data, totals }: { data: DocumentFormData; totals: Totals }) {
@@ -483,7 +483,7 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
 
       {/* PAGE 2: BODY PAGE 1 */}
       <Page size="A4" style={styles.page}>
-        <Text style={styles.pageNumber}>Page 1 of 5</Text>
+        <Text style={styles.pageNumber}>Page 1 of 4</Text>
         
         <Text style={styles.paragraphNoIndent}>
           THIS FARM MANAGEMENT/OWNERSHIP AGREEMENT is made this <Text style={styles.bold}>{formattedDay}</Text> day of <Text style={styles.bold}>{data.month}</Text>, <Text style={styles.bold}>{data.year}</Text>.
@@ -538,11 +538,7 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
             </View>
           </View>
         </View>
-      </Page>
 
-      {/* PAGE 3: BODY PAGE 2 */}
-      <Page size="A4" style={styles.page}>
-        <Text style={styles.pageNumber}>Page 2 of 5</Text>
         
         <Text style={styles.sectionHeading}>NOW THIS AGREEMENT WITNESSES as follows:</Text>
 
@@ -649,7 +645,7 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
 
       {/* PAGE 4: BODY PAGE 3 */}
       <Page size="A4" style={styles.page}>
-        <Text style={styles.pageNumber}>Page 3 of 5</Text>
+        <Text style={styles.pageNumber}>Page 2 of 4</Text>
         
         <View style={[styles.clauseList, { marginTop: 10 }]}>
           <View style={styles.clauseRow}>
@@ -712,7 +708,7 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
 
       {/* PAGE 5: BODY PAGE 4 */}
       <Page size="A4" style={styles.page}>
-        <Text style={styles.pageNumber}>Page 4 of 5</Text>
+        <Text style={styles.pageNumber}>Page 3 of 4</Text>
 
         <View style={{ marginTop: 10 }}>
           {/* Force Majeure */}
@@ -767,7 +763,7 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
 
       {/* PAGE 6: SCHEDULE & SIGNATURES */}
       <Page size="A4" style={styles.page}>
-        <Text style={styles.pageNumber}>Page 5 of 5</Text>
+        <Text style={styles.pageNumber}>Page 4 of 4</Text>
 
         <View style={{ alignItems: 'center', marginVertical: 14 }} wrap={false}>
           <Text style={[styles.bold, { textDecoration: 'underline', fontSize: 11 }]}>SCHEDULE</Text>
