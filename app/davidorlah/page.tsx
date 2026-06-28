@@ -37,7 +37,7 @@ function calculateTotals(numberOfPlots: number, depositPaid?: number) {
   const surveyFee = SURVEY_FEE_PER_PLOT * numberOfPlots;
   const totalDocFees = deedFee + surveyFee;
   const totalPayable = plotPrice + totalDocFees;
-  const balance = depositPaid ? totalPayable - depositPaid : 0; // Balance is on Total Payable
+  const balance = depositPaid ? plotPrice - depositPaid : 0; // Balance is only on Plot Price
   const installmentDuration = numberOfPlots >= 2 ? 6 : 3;      // months
 
   return {
@@ -57,7 +57,7 @@ function formatNaira(amount: number): string {
     style: 'currency',
     currency: 'NGN',
     minimumFractionDigits: 2
-  }).format(amount).replace('NGN', 'N');
+  }).format(amount).replace('NGN', '₦');
 }
 
 export default function DavidorlahGenerator() {

@@ -1,11 +1,22 @@
-import { Document, Page, Text, View, StyleSheet, Svg, Polygon } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Svg, Polygon, Font } from '@react-pdf/renderer';
+import { toWords } from 'number-to-words';
+
+Font.register({
+  family: 'Roboto',
+  fonts: [
+    { src: 'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxK.woff2', fontWeight: 400 },
+    { src: 'https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1Mu4mxK.woff2', fontWeight: 700 },
+    { src: 'https://fonts.gstatic.com/s/roboto/v30/KFOkCnqEu92Fr1Mu51xIIzc.woff2', fontStyle: 'italic', fontWeight: 400 },
+    { src: 'https://fonts.gstatic.com/s/roboto/v30/KFOjCnqEu92Fr1Mu51TzBhc9.woff2', fontStyle: 'italic', fontWeight: 700 }
+  ]
+});
 
 const styles = StyleSheet.create({
   page: {
     paddingTop: 60,
     paddingBottom: 60,
     paddingHorizontal: 72, // ~1 inch margins
-    fontFamily: 'Times-Roman',
+    fontFamily: 'Roboto',
     fontSize: 11,
     lineHeight: 1.6,
     color: '#000000',
@@ -13,7 +24,7 @@ const styles = StyleSheet.create({
   coverPage: {
     padding: 24,
     height: '100%',
-    fontFamily: 'Times-Roman',
+    fontFamily: 'Roboto',
     color: '#000000',
     backgroundColor: '#ffffff',
   },
@@ -39,7 +50,8 @@ const styles = StyleSheet.create({
   },
   coverTitle: {
     fontSize: 18,
-    fontFamily: 'Times-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     textAlign: 'center',
     marginBottom: 20,
     textDecoration: 'underline',
@@ -49,14 +61,17 @@ const styles = StyleSheet.create({
   },
   coverLabel: {
     fontSize: 11,
-    fontFamily: 'Times-BoldItalic',
+    fontFamily: 'Roboto',
+    fontStyle: 'italic',
+    fontWeight: 700,
     textAlign: 'center',
     marginVertical: 8,
     textTransform: 'uppercase',
   },
   coverParty: {
     fontSize: 14,
-    fontFamily: 'Times-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     textAlign: 'center',
     marginVertical: 4,
     textTransform: 'uppercase',
@@ -68,7 +83,8 @@ const styles = StyleSheet.create({
   },
   coverAssigneeName: {
     fontSize: 13,
-    fontFamily: 'Times-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     textAlign: 'center',
     marginVertical: 2,
     textTransform: 'uppercase',
@@ -86,7 +102,9 @@ const styles = StyleSheet.create({
   },
   coverPropertyText: {
     fontSize: 8.5,
-    fontFamily: 'Times-BoldItalic',
+    fontFamily: 'Roboto',
+    fontStyle: 'italic',
+    fontWeight: 700,
     textAlign: 'center',
     textTransform: 'uppercase',
     lineHeight: 1.5,
@@ -110,25 +128,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  placeholderStampCircle: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    borderWidth: 1,
-    borderColor: '#888888',
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderStampText: {
-    fontSize: 6,
-    color: '#888888',
-    fontFamily: 'Times-Italic',
-    textAlign: 'center',
-  },
   bodyTitle: {
     fontSize: 12,
-    fontFamily: 'Times-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     textAlign: 'center',
     marginBottom: 20,
     textDecoration: 'underline',
@@ -136,13 +139,15 @@ const styles = StyleSheet.create({
   },
   sectionHeading: {
     fontSize: 11,
-    fontFamily: 'Times-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     marginTop: 14,
     marginBottom: 6,
     textTransform: 'uppercase',
   },
   boldCenter: {
-    fontFamily: 'Times-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     textAlign: 'center',
     fontSize: 11,
     marginVertical: 8,
@@ -158,13 +163,17 @@ const styles = StyleSheet.create({
     textAlign: 'justify',
   },
   bold: {
-    fontFamily: 'Times-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
   },
   italic: {
-    fontFamily: 'Times-Italic',
+    fontFamily: 'Roboto',
+    fontStyle: 'italic',
   },
   boldItalic: {
-    fontFamily: 'Times-BoldItalic',
+    fontFamily: 'Roboto',
+    fontStyle: 'italic',
+    fontWeight: 700,
   },
   clauseList: {
     width: '100%',
@@ -177,7 +186,7 @@ const styles = StyleSheet.create({
   },
   clauseIndex: {
     width: 24,
-    fontFamily: 'Times-Roman',
+    fontFamily: 'Roboto',
     fontSize: 11,
   },
   clauseText: {
@@ -190,7 +199,7 @@ const styles = StyleSheet.create({
     bottom: 30,
     right: 72,
     fontSize: 9,
-    fontFamily: 'Times-Roman',
+    fontFamily: 'Roboto',
   },
   executionContainer: {
     width: '100%',
@@ -214,7 +223,8 @@ const styles = StyleSheet.create({
   },
   signLabel: {
     fontSize: 9.5,
-    fontFamily: 'Times-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     textTransform: 'uppercase',
     textAlign: 'center',
   },
@@ -302,14 +312,13 @@ const StarburstSeal = ({ size = 70 }: { size?: number }) => {
 };
 
 function getPlotsTextTitleCase(num: number): string {
-  const words = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
-  const word = words[num] || String(num);
-  return `${word} (${num}) ${num === 1 ? 'Plot' : 'Plots'}`;
+  const word = toWords(num);
+  const formattedWord = word.charAt(0).toUpperCase() + word.slice(1);
+  return `${formattedWord} (${num}) ${num === 1 ? 'Plot' : 'Plots'}`;
 }
 
 function getPlotsTextAllCaps(num: number): string {
-  const words = ["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN"];
-  const word = words[num] || String(num).toUpperCase();
+  const word = toWords(num).toUpperCase();
   return `${word} (${num}) ${num === 1 ? 'PLOT' : 'PLOTS'}`;
 }
 
@@ -318,7 +327,7 @@ function formatNaira(amount: number): string {
     style: 'currency',
     currency: 'NGN',
     minimumFractionDigits: 2
-  }).format(amount).replace('NGN', 'N');
+  }).format(amount).replace('NGN', '₦');
 }
 
 function amountInWords(num: number): string {
@@ -449,9 +458,9 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
 
             <View style={styles.coverFooterRow}>
               <View style={styles.coverLawyerCol}>
-                <Text style={{ fontFamily: 'Times-Bold', marginBottom: 2 }}>Prepared by:</Text>
-                <Text style={{ fontFamily: 'Times-Bold' }}>Ayomide Adeosun Esq.</Text>
-                <Text style={{ fontFamily: 'Times-Bold' }}>OLAOSEBIKAN ADEOSUN & CO.</Text>
+                <Text style={{ fontFamily: 'Roboto', fontWeight: 700, marginBottom: 2 }}>Prepared by:</Text>
+                <Text style={{ fontFamily: 'Roboto', fontWeight: 700 }}>Ayomide Adeosun Esq.</Text>
+                <Text style={{ fontFamily: 'Roboto', fontWeight: 700 }}>OLAOSEBIKAN ADEOSUN & CO.</Text>
                 <Text style={styles.italic}>(Legal Practitioners & Notary Public)</Text>
                 <Text>Suite B17, Glory Complex</Text>
                 <Text>229 Ikotun-Idimu Road</Text>
@@ -461,7 +470,7 @@ export function FarmManagementAgreement({ data, totals }: { data: DocumentFormDa
               </View>
 
               <View style={styles.coverSealsCol}>
-                <Text style={{ fontFamily: 'Times-Bold', fontSize: 10, marginRight: 20 }}>SCN139535</Text>
+                <Text style={{ fontFamily: 'Roboto', fontWeight: 700, fontSize: 10, marginRight: 20 }}>SCN139535</Text>
                 <StarburstSeal size={65} />
               </View>
             </View>
