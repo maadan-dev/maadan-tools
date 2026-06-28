@@ -37,7 +37,7 @@ function calculateTotals(numberOfPlots: number, depositPaid?: number) {
   const surveyFee = SURVEY_FEE_PER_PLOT * numberOfPlots;
   const totalDocFees = deedFee + surveyFee;
   const totalPayable = plotPrice + totalDocFees;
-  const balance = depositPaid ? plotPrice - depositPaid : 0; // Balance is only on Plot Price
+  const balance = depositPaid ? Math.max(0, plotPrice - depositPaid) : 0; // Balance is only on Plot Price
   const installmentDuration = numberOfPlots >= 2 ? 6 : 3;      // months
 
   return {

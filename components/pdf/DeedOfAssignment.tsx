@@ -1,14 +1,16 @@
 import { Document, Page, Text, View, StyleSheet, Svg, Polygon, Font } from '@react-pdf/renderer';
-
+import { toWords } from 'number-to-words';
 Font.register({
   family: 'Roboto',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbWmT.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYjammT.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/roboto/v51/KFOKCnqEu92Fr1Mu53ZEC9_Vu3r1gIhOszmOClHrs6ljXfMMLoHQiA8.ttf', fontStyle: 'italic', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/roboto/v51/KFOKCnqEu92Fr1Mu53ZEC9_Vu3r1gIhOszmOClHrs6ljXfMMLmbXiA8.ttf', fontStyle: 'italic', fontWeight: 700 }
+    { src: '/fonts/Roboto-Regular.ttf', fontWeight: 400 },
+    { src: '/fonts/Roboto-Bold.ttf', fontWeight: 700 },
+    { src: '/fonts/Roboto-Italic.ttf', fontStyle: 'italic', fontWeight: 400 },
+    { src: '/fonts/Roboto-BoldItalic.ttf', fontStyle: 'italic', fontWeight: 700 }
   ]
 });
+
+Font.registerHyphenationCallback(word => [word]);
 
 const styles = StyleSheet.create({
   page: {
@@ -390,14 +392,13 @@ const StarburstSeal = ({ size = 70 }: { size?: number }) => {
 };
 
 function getPlotsTextTitleCase(num: number): string {
-  const words = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
-  const word = words[num] || String(num);
-  return `${word} (${num}) ${num === 1 ? 'Plot' : 'Plots'}`;
+  const word = toWords(num);
+  const formattedWord = word.charAt(0).toUpperCase() + word.slice(1);
+  return `${formattedWord} (${num}) ${num === 1 ? 'Plot' : 'Plots'}`;
 }
 
 function getPlotsTextAllCaps(num: number): string {
-  const words = ["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN"];
-  const word = words[num] || String(num).toUpperCase();
+  const word = toWords(num).toUpperCase();
   return `${word} (${num}) ${num === 1 ? 'PLOT' : 'PLOTS'}`;
 }
 
@@ -406,10 +407,11 @@ function formatNaira(amount: number): string {
     style: 'currency',
     currency: 'NGN',
     minimumFractionDigits: 2
-  }).format(amount).replace('NGN', 'N');
+  }).format(amount).replace('NGN', '₦');
 }
 
 function amountInWords(num: number): string {
+  num = Math.abs(num);
   const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
   const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
   const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
