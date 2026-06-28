@@ -54,20 +54,16 @@ function ToolCard({ title, description, badge, href, icon }: ToolCardProps) {
         </p>
       </div>
 
-      <div className="mt-auto pt-4 border-t border-zinc-800/40">
-        {isLive && href ? (
+      {isLive && href && (
+        <div className="mt-auto pt-4 border-t border-zinc-800/40">
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-blue-400 group-hover:gap-3 transition-all">
             <span>Open Tool</span>
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
             </svg>
           </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-zinc-550">
-            Locked
-          </span>
-        )}
-      </div>
+        </div>
+      )}
     </CardWrapper>
   );
 }
@@ -96,7 +92,7 @@ export default function Storefront() {
               Document Automation Tools <br /> for Nigerian Businesses
             </h1>
             <p className="text-sm md:text-base text-zinc-500 max-w-md mx-auto font-light leading-relaxed">
-              Auto-generate customized legal, sales, and business documents optimized for local operations.
+              Built for Nigerian businesses. No lawyers, no Word templates, no mistakes.
             </p>
           </div>
         </header>
@@ -135,6 +131,21 @@ export default function Storefront() {
             }
           />
         </main>
+
+        {/* Business CTA Section */}
+        <section className="mt-20 text-center bg-zinc-900/10 border border-zinc-800/80 p-8 rounded-3xl max-w-xl mx-auto backdrop-blur-sm relative z-10 hover:border-zinc-700 transition-colors">
+          <h3 className="font-semibold text-base text-zinc-200 mb-2">Need a custom document tool for your business?</h3>
+          <p className="text-xs text-zinc-500 mb-5 font-light leading-relaxed">We build tailored document automation pipelines, PDF generators, and contract workflows.</p>
+          <a 
+            href="mailto:abdulyekeenmaadan@gmail.com?subject=Custom Document Tool Inquiry"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-white text-black text-xs font-semibold uppercase tracking-wider hover:bg-zinc-200 transition-all duration-300"
+          >
+            <span>Contact Us</span>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+            </svg>
+          </a>
+        </section>
       </div>
 
       {/* Footer */}
