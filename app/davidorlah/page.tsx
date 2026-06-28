@@ -3,33 +3,85 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { pdf } from "@react-pdf/renderer";
+import { saveAs } from "file-saver";
+
+// Import PDF templates
 import { DeedOfAssignment } from "../../components/pdf/DeedOfAssignment";
 import { FarmManagementAgreement } from "../../components/pdf/FarmManagementAgreement";
 
 const BRAND_GREEN = "#7AB648";
 
+interface DocumentFormData {
+  assignee1Name: string;
+  assignee2Name?: string;
+  clientAddress: string;
+  numberOfPlots: number;
+  paymentType: 'full' | 'installment';
+  depositPaid?: number;
+  day: string;
+  month: string;
+  year: string;
+}
+
+// Pure calculation logic from specification
+const PLOT_PRICE = 2999999;                    // ₦2,999,999 per plot
+const ANNUAL_ROI_RATE = 0.36;                  // 36%
+const DEED_FEE_PER_PLOT = 100000;             // ₦100,000 per plot
+const SURVEY_FEE_PER_PLOT = 250000;           // ₦250,000 per plot
+
+function calculateTotals(numberOfPlots: number, depositPaid?: number) {
+  const plotPrice = PLOT_PRICE * numberOfPlots;
+  const annualROI = plotPrice * ANNUAL_ROI_RATE;
+  const deedFee = DEED_FEE_PER_PLOT * numberOfPlots;
+  const surveyFee = SURVEY_FEE_PER_PLOT * numberOfPlots;
+  const totalDocFees = deedFee + surveyFee;
+  const totalPayable = plotPrice + totalDocFees;
+  const balance = depositPaid ? totalPayable - depositPaid : 0; // Balance is on Total Payable
+  const installmentDuration = numberOfPlots >= 2 ? 6 : 3;      // months
+
+  return {
+    plotPrice,
+    annualROI,
+    deedFee,
+    surveyFee,
+    totalDocFees,
+    totalPayable,
+    balance,
+    installmentDuration
+  };
+}
+
+function formatNaira(amount: number): string {
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 2
+  }).format(amount).replace('NGN', '₦');
+}
+
 export default function DavidorlahGenerator() {
-  // 1. Client Hydration Safety State
+  // Client Hydration Safety
   const [isClient, setIsClient] = useState(false);
 
-  // 2. Form Input States
-  const [assignee1, setAssignee1] = useState("");
-  const [assignee2, setAssignee2] = useState("");
-  const [address, setAddress] = useState("");
-  const [plots, setPlots] = useState(1);
+  // Form States
+  const [assignee1Name, setAssignee1Name] = useState("");
+  const [assignee2Name, setAssignee2Name] = useState("");
+  const [clientAddress, setClientAddress] = useState("");
+  const [numberOfPlots, setNumberOfPlots] = useState(1);
   const [paymentType, setPaymentType] = useState<"full" | "installment">("full");
-  const [depositAmount, setDepositAmount] = useState("");
-  const [duration, setDuration] = useState<"3 months" | "6 months">("3 months");
+  const [depositPaid, setDepositPaid] = useState("");
   
   // Date Dropdowns (Default to current date)
   const [day, setDay] = useState("1");
   const [month, setMonth] = useState("January");
   const [year, setYear] = useState("2026");
 
-  // 3. Document Generation Flow States
+  // Document Blobs & Generate States
   const [isGenerating, setIsGenerating] = useState(false);
-  const [documentsGenerated, setDocumentsGenerated] = useState(false);
+  const [docsReady, setDocsReady] = useState(false);
+  const [deedBlob, setDeedBlob] = useState<Blob | null>(null);
+  const [farmBlob, setFarmBlob] = useState<Blob | null>(null);
 
   // Set default current date on mount & ensure client-side rendering
   useEffect(() => {
@@ -44,42 +96,95 @@ export default function DavidorlahGenerator() {
     setYear(String(today.getFullYear()));
   }, []);
 
-  // 4. Financial Calculations
-  const plotUnitPrice = 2999999;
-  const deedFee = 100000;
-  const surveyFee = 250000;
+  // Recalculate totals dynamically
+  const totals = calculateTotals(
+    numberOfPlots, 
+    paymentType === "installment" && depositPaid.trim() ? Number(depositPaid) : undefined
+  );
 
-  const totalPlotPrice = plots * plotUnitPrice;
-  const totalPayable = totalPlotPrice + deedFee + surveyFee;
+  const fiveYearRoi = totals.annualROI * 5;
 
-  const annualRoi = plots * 1079999;
-  const fiveYearRoi = annualRoi * 5;
+  // Form Validation Rule
+  const isFormValid = 
+    assignee1Name.trim().length > 0 &&
+    clientAddress.trim().length > 0 &&
+    numberOfPlots >= 1 &&
+    day !== "" &&
+    month !== "" &&
+    year !== "" &&
+    (paymentType === "full" || 
+      (paymentType === "installment" && 
+       depositPaid.trim().length > 0 && 
+       Number(depositPaid) > 0 &&
+       Number(depositPaid) < totals.totalPayable));
 
-  // 5. Form Validation
-  const isFormInvalid = 
-    !assignee1.trim() || 
-    !address.trim() || 
-    (paymentType === "installment" && (!depositAmount.trim() || Number(depositAmount) <= 0));
-
-  // 6. Generate action trigger
-  const handleGenerate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isFormInvalid) return;
-
-    setIsGenerating(true);
-    setDocumentsGenerated(false);
-
-    // Simulate PDF template compilation
-    setTimeout(() => {
-      setIsGenerating(false);
-      setDocumentsGenerated(true);
-    }, 1800);
+  // Reset document states when any form inputs change to force re-generation
+  const handleFormChange = (setter: any, val: any) => {
+    setter(val);
+    setDocsReady(false);
+    setDeedBlob(null);
+    setFarmBlob(null);
   };
 
-  // Reset document state if inputs change
-  const handleInputChange = (setter: any) => (val: any) => {
-    setter(val);
-    setDocumentsGenerated(false);
+  // Generate Handler: Compiles PDF layouts into Blobs in parallel
+  const handleGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isFormValid) return;
+
+    setIsGenerating(true);
+    setDocsReady(false);
+
+    try {
+      const formData: DocumentFormData = {
+        assignee1Name: assignee1Name.toUpperCase().trim(),
+        assignee2Name: assignee2Name.trim() ? assignee2Name.toUpperCase().trim() : undefined,
+        clientAddress: clientAddress.toUpperCase().trim(),
+        numberOfPlots,
+        paymentType,
+        depositPaid: paymentType === "installment" ? Number(depositPaid) : undefined,
+        day,
+        month,
+        year
+      };
+
+      // Compile both documents in the background concurrently
+      const [deed, farm] = await Promise.all([
+        pdf(<DeedOfAssignment data={formData} totals={totals} />).toBlob(),
+        pdf(<FarmManagementAgreement data={formData} totals={totals} />).toBlob()
+      ]);
+
+      setDeedBlob(deed);
+      setFarmBlob(farm);
+      setDocsReady(true);
+    } catch (error) {
+      console.error("Failed to generate PDF documents:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Download Action triggers
+  const downloadDeed = () => {
+    if (!deedBlob) return;
+    const filename = `${assignee1Name.toUpperCase().replace(/\s+/g, '_')}_Deed_of_Assignment.pdf`;
+    saveAs(deedBlob, filename);
+  };
+
+  const downloadFarmAgreement = () => {
+    if (!farmBlob) return;
+    const filename = `${assignee1Name.toUpperCase().replace(/\s+/g, '_')}_Farm_Management_Agreement.pdf`;
+    saveAs(farmBlob, filename);
+  };
+
+  // Stepper helper
+  const incrementPlots = () => {
+    handleFormChange(setNumberOfPlots, numberOfPlots + 1);
+  };
+
+  const decrementPlots = () => {
+    if (numberOfPlots > 1) {
+      handleFormChange(setNumberOfPlots, numberOfPlots - 1);
+    }
   };
 
   const days = Array.from({ length: 31 }, (_, i) => String(i + 1));
@@ -89,30 +194,21 @@ export default function DavidorlahGenerator() {
   ];
   const years = Array.from({ length: 10 }, (_, i) => String(2026 + i));
 
-  // Package form data matching the templates
-  const templateData = {
-    assignee1,
-    assignee2: assignee2.trim() ? assignee2 : undefined,
-    address,
-    plots,
-    paymentType,
-    depositAmount,
-    duration,
-    day,
-    month,
-    year,
-    totalPrice: totalPlotPrice,
-  };
-
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-zinc-100 flex flex-col justify-between selection:bg-[#7AB648]/20 selection:text-white">
       {/* Header Navigation */}
       <header className="border-b border-zinc-900 bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-40 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            {/* Logo placeholder - swaps dynamically */}
-            <div className="relative w-10 h-10 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden flex items-center justify-center">
-              <span className="font-mono text-xs font-semibold text-[#7AB648]">DF</span>
+            {/* Logo pulled from public/images/davidorlah_logo.png */}
+            <div className="relative w-10 h-10 bg-zinc-950 border border-zinc-900 rounded-xl overflow-hidden flex items-center justify-center">
+              <Image 
+                src="/images/davidorlah_logo.png" 
+                alt="Davidorlah Farms Logo" 
+                fill 
+                className="object-contain p-1"
+                priority
+              />
             </div>
             
             {/* Breadcrumb path */}
@@ -123,7 +219,7 @@ export default function DavidorlahGenerator() {
                 <span className="text-zinc-400">Davidorlah Farms</span>
               </div>
               <h2 className="font-semibold text-sm text-zinc-200">
-                Farms legal Document Generator
+                Farms Document Generator
               </h2>
             </div>
           </div>
@@ -162,11 +258,10 @@ export default function DavidorlahGenerator() {
                   <input 
                     type="text" 
                     required
-                    value={assignee1}
-                    onChange={(e) => handleInputChange(setAssignee1)(e.target.value)}
-                    placeholder="e.g. Abdulyekeen Maadan"
-                    style={{ '--focus-ring': BRAND_GREEN } as React.CSSProperties}
-                    className="w-full px-4 py-3 rounded-xl bg-[#1A1A1A]/80 border border-zinc-800 text-sm text-zinc-150 placeholder-zinc-600 focus:outline-none focus:border-[#7AB648] focus:ring-1 focus:ring-[#7AB648] transition-all"
+                    value={assignee1Name}
+                    onChange={(e) => handleFormChange(setAssignee1Name, e.target.value)}
+                    placeholder="e.g. MR. KAYODE ABRAHAM MAYAH"
+                    className="w-full px-4 py-3 rounded-xl bg-[#1A1A1A]/80 border border-zinc-800 text-sm text-zinc-150 placeholder-zinc-650 focus:outline-none focus:border-[#7AB648] focus:ring-1 focus:ring-[#7AB648] transition-all"
                   />
                 </div>
 
@@ -174,10 +269,10 @@ export default function DavidorlahGenerator() {
                   <label className="text-xs text-zinc-400 font-medium">Assignee 2 Full Name <span className="text-zinc-600 font-light">(Optional)</span></label>
                   <input 
                     type="text" 
-                    value={assignee2}
-                    onChange={(e) => handleInputChange(setAssignee2)(e.target.value)}
-                    placeholder="e.g. Spouse, partner or co-owner"
-                    className="w-full px-4 py-3 rounded-xl bg-[#1A1A1A]/80 border border-zinc-800 text-sm text-zinc-150 placeholder-zinc-600 focus:outline-none focus:border-[#7AB648] focus:ring-1 focus:ring-[#7AB648] transition-all"
+                    value={assignee2Name}
+                    onChange={(e) => handleFormChange(setAssignee2Name, e.target.value)}
+                    placeholder="e.g. MRS. DORAH ERENARIFAGHA MAYAH"
+                    className="w-full px-4 py-3 rounded-xl bg-[#1A1A1A]/80 border border-zinc-800 text-sm text-zinc-150 placeholder-zinc-650 focus:outline-none focus:border-[#7AB648] focus:ring-1 focus:ring-[#7AB648] transition-all"
                   />
                 </div>
               </div>
@@ -187,10 +282,10 @@ export default function DavidorlahGenerator() {
                 <textarea 
                   required
                   rows={3}
-                  value={address}
-                  onChange={(e) => handleInputChange(setAddress)(e.target.value)}
-                  placeholder="e.g. Plot 15, Admiralty Way, Lekki Phase 1, Lagos"
-                  className="w-full px-4 py-3 rounded-xl bg-[#1A1A1A]/80 border border-zinc-800 text-sm text-zinc-150 placeholder-zinc-600 focus:outline-none focus:border-[#7AB648] focus:ring-1 focus:ring-[#7AB648] transition-all resize-none"
+                  value={clientAddress}
+                  onChange={(e) => handleFormChange(setClientAddress, e.target.value)}
+                  placeholder="e.g. 12 Bode Thomas Street, Surulere, Lagos"
+                  className="w-full px-4 py-3 rounded-xl bg-[#1A1A1A]/80 border border-zinc-800 text-sm text-zinc-150 placeholder-zinc-650 focus:outline-none focus:border-[#7AB648] focus:ring-1 focus:ring-[#7AB648] transition-all resize-none"
                 />
               </div>
             </section>
@@ -211,16 +306,16 @@ export default function DavidorlahGenerator() {
                   <div className="flex items-center w-36 bg-[#1A1A1A]/80 border border-zinc-800 rounded-xl overflow-hidden p-1">
                     <button 
                       type="button"
-                      disabled={plots <= 1}
-                      onClick={() => handleInputChange(setPlots)(Math.max(1, plots - 1))}
+                      disabled={numberOfPlots <= 1}
+                      onClick={decrementPlots}
                       className="w-10 h-10 flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent transition-all font-semibold"
                     >
                       &minus;
                     </button>
-                    <span className="flex-grow text-center font-mono font-bold text-sm text-zinc-200">{plots}</span>
+                    <span className="flex-grow text-center font-mono font-bold text-sm text-zinc-200">{numberOfPlots}</span>
                     <button 
                       type="button"
-                      onClick={() => handleInputChange(setPlots)(plots + 1)}
+                      onClick={incrementPlots}
                       className="w-10 h-10 flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-all font-semibold"
                     >
                       &#43;
@@ -236,14 +331,14 @@ export default function DavidorlahGenerator() {
                       <button
                         key={type}
                         type="button"
-                        onClick={() => handleInputChange(setPaymentType)(type)}
+                        onClick={() => handleFormChange(setPaymentType, type)}
                         className={`px-5 py-2 rounded-lg text-xs font-bold tracking-wide uppercase transition-all ${
                           paymentType === type 
                             ? 'bg-[#7AB648] text-black font-extrabold shadow-[0_0_12px_rgba(122,182,72,0.2)]'
                             : 'text-zinc-400 hover:text-zinc-250 bg-transparent'
                         }`}
                       >
-                        {type === "full" ? "Outright" : "Installment"}
+                        {type === "full" ? "Full" : "Installment"}
                       </button>
                     ))}
                   </div>
@@ -263,31 +358,21 @@ export default function DavidorlahGenerator() {
                       type="number" 
                       min="1"
                       required={paymentType === "installment"}
-                      value={depositAmount}
-                      onChange={(e) => handleInputChange(setDepositAmount)(e.target.value)}
+                      value={depositPaid}
+                      onChange={(e) => handleFormChange(setDepositPaid, e.target.value)}
                       placeholder="e.g. 1500000"
-                      className="w-full px-4 py-3 rounded-xl bg-[#1A1A1A]/80 border border-zinc-800 text-sm text-zinc-150 placeholder-zinc-600 focus:outline-none focus:border-[#7AB648] focus:ring-1 focus:ring-[#7AB648] transition-all"
+                      className="w-full px-4 py-3 rounded-xl bg-[#1A1A1A]/80 border border-zinc-800 text-sm text-zinc-150 placeholder-zinc-650 focus:outline-none focus:border-[#7AB648] focus:ring-1 focus:ring-[#7AB648] transition-all"
                     />
                   </div>
 
                   <div className="flex flex-col gap-2">
                     <label className="text-xs text-zinc-400 font-medium">Installment Duration</label>
-                    <div className="flex bg-[#1A1A1A]/80 border border-zinc-800 p-1.5 rounded-xl w-fit">
-                      {(["3 months", "6 months"] as const).map(dur => (
-                        <button
-                          key={dur}
-                          type="button"
-                          onClick={() => handleInputChange(setDuration)(dur)}
-                          className={`px-4 py-2 rounded-lg text-xs font-bold tracking-wide uppercase transition-all ${
-                            duration === dur 
-                              ? 'bg-zinc-800 text-white'
-                              : 'text-zinc-500 hover:text-zinc-350 bg-transparent'
-                          }`}
-                        >
-                          {dur}
-                        </button>
-                      ))}
-                    </div>
+                    <input 
+                      type="text" 
+                      readOnly
+                      value={`${totals.installmentDuration} months`}
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-800/10 border border-zinc-850 text-sm text-zinc-500 cursor-not-allowed select-none focus:outline-none"
+                    />
                   </div>
                 </div>
               </div>
@@ -307,7 +392,7 @@ export default function DavidorlahGenerator() {
                   <label className="text-[10px] text-zinc-500 font-mono uppercase">Day</label>
                   <select 
                     value={day}
-                    onChange={(e) => handleInputChange(setDay)(e.target.value)}
+                    onChange={(e) => handleFormChange(setDay, e.target.value)}
                     className="w-full px-3 py-3 rounded-xl bg-[#1A1A1A]/80 border border-zinc-800 text-sm text-zinc-150 focus:outline-none focus:border-[#7AB648] focus:ring-1 focus:ring-[#7AB648] transition-all"
                   >
                     {days.map(d => <option key={d} value={d} className="bg-[#1A1A1A]">{d}</option>)}
@@ -318,7 +403,7 @@ export default function DavidorlahGenerator() {
                   <label className="text-[10px] text-zinc-500 font-mono uppercase">Month</label>
                   <select 
                     value={month}
-                    onChange={(e) => handleInputChange(setMonth)(e.target.value)}
+                    onChange={(e) => handleFormChange(setMonth, e.target.value)}
                     className="w-full px-3 py-3 rounded-xl bg-[#1A1A1A]/80 border border-zinc-800 text-sm text-zinc-150 focus:outline-none focus:border-[#7AB648] focus:ring-1 focus:ring-[#7AB648] transition-all"
                   >
                     {months.map(m => <option key={m} value={m} className="bg-[#1A1A1A]">{m}</option>)}
@@ -329,7 +414,7 @@ export default function DavidorlahGenerator() {
                   <label className="text-[10px] text-zinc-500 font-mono uppercase">Year</label>
                   <select 
                     value={year}
-                    onChange={(e) => handleInputChange(setYear)(e.target.value)}
+                    onChange={(e) => handleFormChange(setYear, e.target.value)}
                     className="w-full px-3 py-3 rounded-xl bg-[#1A1A1A]/80 border border-zinc-800 text-sm text-zinc-150 focus:outline-none focus:border-[#7AB648] focus:ring-1 focus:ring-[#7AB648] transition-all"
                   >
                     {years.map(y => <option key={y} value={y} className="bg-[#1A1A1A]">{y}</option>)}
@@ -355,31 +440,31 @@ export default function DavidorlahGenerator() {
               <div className="flex flex-col gap-4 font-mono text-[13px]">
                 <div className="flex justify-between items-center text-zinc-400">
                   <span>Plots</span>
-                  <span className="text-zinc-200 font-bold">{plots}</span>
+                  <span className="text-zinc-200 font-bold">{numberOfPlots}</span>
                 </div>
                 
                 <div className="h-[1px] bg-zinc-800/60" />
                 
                 <div className="flex justify-between items-center text-zinc-400">
                   <span>Plot Price</span>
-                  <span className="text-zinc-200">₦{totalPlotPrice.toLocaleString()}</span>
+                  <span className="text-zinc-200">{formatNaira(totals.plotPrice)}</span>
                 </div>
 
                 <div className="flex justify-between items-center text-zinc-400">
                   <span>Deed of Assignment</span>
-                  <span className="text-zinc-200">₦{deedFee.toLocaleString()}</span>
+                  <span className="text-zinc-200">{formatNaira(totals.deedFee)}</span>
                 </div>
 
                 <div className="flex justify-between items-center text-zinc-400">
                   <span>Perimeter Survey</span>
-                  <span className="text-zinc-200">₦{surveyFee.toLocaleString()}</span>
+                  <span className="text-zinc-200">{formatNaira(totals.surveyFee)}</span>
                 </div>
 
                 <div className="h-[1px] bg-zinc-800/60" />
 
                 <div className="flex justify-between items-center text-zinc-150 font-bold text-sm">
                   <span>Total Payable</span>
-                  <span className="text-white text-base">₦{totalPayable.toLocaleString()}</span>
+                  <span className="text-white text-base">{formatNaira(totals.totalPayable)}</span>
                 </div>
               </div>
 
@@ -387,21 +472,23 @@ export default function DavidorlahGenerator() {
               <div className="bg-[#0A0A0A]/40 border border-zinc-850 rounded-2xl p-5 flex flex-col gap-3 font-mono text-[12px]">
                 <div className="flex justify-between items-center">
                   <span className="text-zinc-500">Annual ROI (36%)</span>
-                  <span className="text-emerald-400 font-semibold">₦{annualRoi.toLocaleString()}</span>
+                  <span className="text-[#7AB648] font-semibold">{formatNaira(totals.annualROI)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-zinc-500">ROI over 5 years</span>
-                  <span className="text-emerald-400 font-semibold">₦{fiveYearRoi.toLocaleString()}</span>
+                  <span className="text-[#7AB648] font-semibold">{formatNaira(fiveYearRoi)}</span>
                 </div>
               </div>
 
               {/* Generate button action */}
               <button
                 type="submit"
-                disabled={isFormInvalid || isGenerating}
+                disabled={!isFormValid || isGenerating}
                 className={`w-full py-4 rounded-2xl text-xs font-bold tracking-widest uppercase transition-all flex items-center justify-center gap-2 ${
-                  isFormInvalid
-                    ? 'bg-zinc-800/40 text-zinc-600 border border-zinc-800 cursor-not-allowed'
+                  !isFormValid
+                    ? 'bg-zinc-800/40 text-zinc-650 border border-zinc-800 cursor-not-allowed'
+                    : isGenerating
+                    ? 'bg-[#7AB648]/60 text-black/60 cursor-wait border border-transparent'
                     : 'bg-[#7AB648] text-black font-extrabold hover:opacity-90 hover:scale-[0.99] border border-transparent shadow-[0_0_20px_rgba(122,182,72,0.15)]'
                 }`}
               >
@@ -425,23 +512,23 @@ export default function DavidorlahGenerator() {
                 Downloads Panel
               </h4>
               
-              {isClient && documentsGenerated ? (
+              {isClient && docsReady ? (
                 <div className="flex flex-col gap-3">
-                  <PDFDownloadLink
-                    document={<DeedOfAssignment data={templateData} />}
-                    fileName={`${assignee1.replace(/\s+/g, "_")}_DeedOfAssignment.pdf`}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-zinc-800 hover:border-zinc-600 hover:bg-white/10 text-xs font-semibold text-zinc-200 transition-colors"
+                  <button 
+                    type="button"
+                    onClick={downloadDeed}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-zinc-800 hover:border-[#7AB648] hover:bg-[#7AB648]/5 text-xs font-semibold text-zinc-200 transition-colors"
                   >
-                    {({ loading }) => (loading ? "Preparing Deed..." : "↓ Download Deed of Assignment")}
-                  </PDFDownloadLink>
+                    ↓ Download Deed of Assignment
+                  </button>
 
-                  <PDFDownloadLink
-                    document={<FarmManagementAgreement data={templateData} />}
-                    fileName={`${assignee1.replace(/\s+/g, "_")}_FarmManagementAgreement.pdf`}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-zinc-800 hover:border-zinc-600 hover:bg-white/10 text-xs font-semibold text-zinc-200 transition-colors"
+                  <button 
+                    type="button"
+                    onClick={downloadFarmAgreement}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-zinc-800 hover:border-[#7AB648] hover:bg-[#7AB648]/5 text-xs font-semibold text-zinc-200 transition-colors"
                   >
-                    {({ loading }) => (loading ? "Preparing Agreement..." : "↓ Download Farm Management Agreement")}
-                  </PDFDownloadLink>
+                    ↓ Download Farm Management Agreement
+                  </button>
                 </div>
               ) : (
                 <div className="text-center py-6 px-4 border border-dashed border-zinc-800 rounded-2xl flex items-center justify-center">

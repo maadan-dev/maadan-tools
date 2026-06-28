@@ -1,193 +1,694 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Svg, Polygon } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
   page: {
-    padding: 60,
+    paddingTop: 60,
+    paddingBottom: 60,
+    paddingHorizontal: 72, // ~1 inch margins
+    fontFamily: 'Times-Roman',
     fontSize: 11,
-    fontFamily: 'Helvetica',
     lineHeight: 1.6,
-    color: '#111111',
+    color: '#000000',
   },
-  title: {
-    fontSize: 14,
-    fontFamily: 'Helvetica-Bold',
-    textAlign: 'center',
-    marginBottom: 24,
-    textTransform: 'uppercase',
+  coverPage: {
+    padding: 24,
+    height: '100%',
+    fontFamily: 'Times-Roman',
+    color: '#000000',
+    backgroundColor: '#ffffff',
   },
-  subTitle: {
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
+  borderContainer: {
+    borderWidth: 3,
+    borderColor: '#000000',
+    padding: 3,
+    flex: 1,
+  },
+  innerBorderContainer: {
+    borderWidth: 1,
+    borderColor: '#000000',
+    flex: 1,
+    paddingVertical: 36,
+    paddingHorizontal: 40,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  coverHeader: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  coverTitle: {
+    fontSize: 18,
+    fontFamily: 'Times-Bold',
     textAlign: 'center',
     marginBottom: 20,
-  },
-  section: {
-    marginBottom: 15,
-  },
-  heading: {
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 12,
-    marginBottom: 8,
+    textDecoration: 'underline',
     textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  coverLabel: {
+    fontSize: 11,
+    fontFamily: 'Times-BoldItalic',
+    textAlign: 'center',
+    marginVertical: 8,
+    textTransform: 'uppercase',
+  },
+  coverParty: {
+    fontSize: 14,
+    fontFamily: 'Times-Bold',
+    textAlign: 'center',
+    marginVertical: 4,
+    textTransform: 'uppercase',
+  },
+  coverAssigneesBlock: {
+    width: '100%',
+    alignItems: 'center',
+    marginVertical: 12,
+  },
+  coverAssigneeName: {
+    fontSize: 13,
+    fontFamily: 'Times-Bold',
+    textAlign: 'center',
+    marginVertical: 2,
+    textTransform: 'uppercase',
+  },
+  horizontalLine: {
     borderBottomWidth: 1,
     borderBottomColor: '#000000',
-    paddingBottom: 2,
+    width: '100%',
+    marginVertical: 14,
+  },
+  coverPropertyBlock: {
+    width: '100%',
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  coverPropertyText: {
+    fontSize: 8.5,
+    fontFamily: 'Times-BoldItalic',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    lineHeight: 1.5,
+  },
+  coverFooterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    width: '100%',
+    marginTop: 20,
+  },
+  coverLawyerCol: {
+    width: '55%',
+    fontSize: 8.5,
+    lineHeight: 1.35,
+  },
+  coverSealsCol: {
+    width: '45%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 8,
+  },
+  placeholderStampCircle: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    borderWidth: 1,
+    borderColor: '#888888',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderStampText: {
+    fontSize: 6,
+    color: '#888888',
+    fontFamily: 'Times-Italic',
+    textAlign: 'center',
+  },
+  bodyTitle: {
+    fontSize: 12,
+    fontFamily: 'Times-Bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    textDecoration: 'underline',
+    textTransform: 'uppercase',
+  },
+  sectionHeading: {
+    fontSize: 11,
+    fontFamily: 'Times-Bold',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  boldCenter: {
+    fontFamily: 'Times-Bold',
+    textAlign: 'center',
+    fontSize: 11,
+    marginVertical: 8,
+    textTransform: 'uppercase',
   },
   paragraph: {
     marginBottom: 12,
     textAlign: 'justify',
+    textIndent: 28, // first line indent
   },
-  bold: {
-    fontFamily: 'Helvetica-Bold',
-  },
-  bulletList: {
-    marginLeft: 15,
+  paragraphNoIndent: {
     marginBottom: 12,
-  },
-  bulletItem: {
-    marginBottom: 6,
     textAlign: 'justify',
   },
-  table: {
-    marginVertical: 15,
-    borderWidth: 1,
-    borderColor: '#cccccc',
+  bold: {
+    fontFamily: 'Times-Bold',
   },
-  tableRow: {
+  italic: {
+    fontFamily: 'Times-Italic',
+  },
+  boldItalic: {
+    fontFamily: 'Times-BoldItalic',
+  },
+  clauseList: {
+    width: '100%',
+    marginBottom: 10,
+  },
+  clauseRow: {
     flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#cccccc',
-    padding: 8,
+    marginBottom: 10,
+    alignItems: 'flex-start',
   },
-  tableCellLabel: {
-    width: '35%',
-    fontFamily: 'Helvetica-Bold',
+  clauseIndex: {
+    width: 24,
+    fontFamily: 'Times-Roman',
+    fontSize: 11,
   },
-  tableCellVal: {
-    width: '65%',
+  clauseText: {
+    flex: 1,
+    textAlign: 'justify',
+    fontSize: 11,
   },
-  signatureContainer: {
+  pageNumber: {
+    position: 'absolute',
+    bottom: 30,
+    right: 72,
+    fontSize: 9,
+    fontFamily: 'Times-Roman',
+  },
+  executionContainer: {
+    width: '100%',
+    marginTop: 14,
+  },
+  signGroupRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 60,
+    marginVertical: 12,
   },
-  signatureBlock: {
+  signLineCol: {
     width: '45%',
-    borderTopWidth: 1,
-    borderTopColor: '#000000',
-    paddingTop: 8,
+    alignItems: 'center',
+  },
+  signLine: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#000000',
+    width: '100%',
+    marginTop: 35,
+    marginBottom: 4,
+  },
+  signLabel: {
+    fontSize: 9.5,
+    fontFamily: 'Times-Bold',
+    textTransform: 'uppercase',
     textAlign: 'center',
+  },
+  sealsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 16,
+    paddingHorizontal: 10,
+  },
+  redWaxCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#d32f2f',
+  },
+  assigneeSignRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginVertical: 8,
+  },
+  assigneeTextCol: {
+    width: '60%',
     fontSize: 10,
+    lineHeight: 1.4,
+  },
+  assigneeSignCol: {
+    width: '35%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  assigneeSignLine: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#000000',
+    width: 100,
+    marginBottom: 4,
+  },
+  witnessSection: {
+    marginTop: 16,
+    fontSize: 10,
+  },
+  witnessLine: {
+    marginVertical: 3,
+  },
+  consentBox: {
+    marginTop: 24,
+    alignItems: 'center',
+    width: '100%',
+  },
+  consentTitle: {
+    fontSize: 11,
+    fontFamily: 'Times-Bold',
+    textDecoration: 'underline',
+    textTransform: 'uppercase',
+    marginBottom: 10,
+  },
+  consentText: {
+    fontSize: 11,
+    fontFamily: 'Times-Bold',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    marginBottom: 6,
+    width: '100%',
+  },
+  consentDateLine: {
+    fontSize: 11,
+    fontFamily: 'Times-Bold',
+    textAlign: 'center',
+    marginBottom: 16,
+    width: '100%',
+  },
+  consentFooter: {
+    fontSize: 11,
+    fontFamily: 'Times-Bold',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  consentFooterSub: {
+    fontSize: 10,
+    fontFamily: 'Times-BoldItalic',
+    textAlign: 'center',
+    marginTop: 2,
   }
 });
 
-interface DeedData {
-  assignee1: string;
-  assignee2?: string;
-  address: string;
-  plots: number;
+interface DocumentFormData {
+  assignee1Name: string;
+  assignee2Name?: string;
+  clientAddress: string;
+  numberOfPlots: number;
   paymentType: 'full' | 'installment';
-  depositAmount?: string;
-  duration?: string;
+  depositPaid?: number;
   day: string;
   month: string;
   year: string;
-  totalPrice: number;
 }
 
-export function DeedOfAssignment({ data }: { data: DeedData }) {
-  const dateStr = `${data.day} day of ${data.month}, ${data.year}`;
-  const totalAmountWords = `${data.totalPrice.toLocaleString('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 })} Naira`;
+interface Totals {
+  plotPrice: number;
+  annualROI: number;
+  deedFee: number;
+  surveyFee: number;
+  totalDocFees: number;
+  totalPayable: number;
+  balance: number;
+  installmentDuration: number;
+}
+
+// Vector Red Wax Starburst Seal Component
+const StarburstSeal = ({ size = 70 }: { size?: number }) => {
+  const points = [];
+  const cx = size / 2;
+  const cy = size / 2;
+  const r1 = size * 0.38; // inner radius
+  const r2 = size * 0.5;  // outer radius
+  const teethCount = 36;
   
-  const buyerNames = data.assignee2 
-    ? `${data.assignee1} & ${data.assignee2}` 
-    : data.assignee1;
+  for (let i = 0; i < teethCount * 2; i++) {
+    const angle = (i * Math.PI) / teethCount;
+    const r = i % 2 === 0 ? r2 : r1;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    points.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  
+  return (
+    <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <Polygon points={points.join(' ')} fill="#d32f2f" />
+    </Svg>
+  );
+};
+
+// Convert number to uppercase words helper
+function getPlotsText(num: number): string {
+  const words = ["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN"];
+  const word = words[num] || String(num).toUpperCase();
+  return `${word} (${num}) ${num === 1 ? 'PLOT' : 'PLOTS'}`;
+}
+
+function formatNaira(amount: number): string {
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 2
+  }).format(amount).replace('NGN', '₦');
+}
+
+function amountInWords(num: number): string {
+  const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+  const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+  
+  if (num === 0) return "Zero Naira";
+  
+  function convertHelper(n: number): string {
+    let str = "";
+    if (n >= 100) {
+      str += ones[Math.floor(n / 100)] + " Hundred";
+      n %= 100;
+      if (n > 0) str += " and ";
+    }
+    if (n >= 20) {
+      str += tens[Math.floor(n / 10)];
+      n %= 10;
+      if (n > 0) str += "-" + ones[n];
+    } else if (n >= 10) {
+      str += teens[n - 10];
+    } else if (n > 0) {
+      str += ones[n];
+    }
+    return str;
+  }
+
+  let result = "";
+  let millions = Math.floor(num / 1000000);
+  let remainder = num % 1000000;
+  
+  if (millions > 0) {
+    result += convertHelper(millions) + " Million";
+    if (remainder > 0) {
+      result += remainder < 100 ? " and " : ", ";
+    }
+  }
+  
+  let thousands = Math.floor(remainder / 1000);
+  remainder %= 1000;
+  
+  if (thousands > 0) {
+    result += convertHelper(thousands) + " Thousand";
+    if (remainder > 0) {
+      result += remainder < 100 ? " and " : ", ";
+    }
+  }
+  
+  if (remainder > 0) {
+    result += convertHelper(remainder);
+  }
+  
+  return result.trim() + " Naira";
+}
+
+export function DeedOfAssignment({ data, totals }: { data: DocumentFormData; totals: Totals }) {
+  const assignee1Upper = data.assignee1Name.toUpperCase().trim();
+  const assignee2Upper = data.assignee2Name?.toUpperCase().trim();
+  const addressUpper = data.clientAddress.toUpperCase().trim();
+  
+  const sqmts = 500 * data.numberOfPlots;
+  const plotsText = getPlotsText(data.numberOfPlots);
+
+  const priceInFigures = formatNaira(totals.plotPrice);
+  const priceInWords = amountInWords(totals.plotPrice);
+  
+  const formattedDay = data.day.match(/\d+$/) 
+    ? (() => {
+        const d = parseInt(data.day);
+        if (d === 1 || d === 21 || d === 31) return `${d}st`;
+        if (d === 2 || d === 22) return `${d}nd`;
+        if (d === 3 || d === 23) return `${d}rd`;
+        return `${d}th`;
+      })()
+    : data.day;
 
   return (
     <Document>
+      {/* PAGE 1: COVER PAGE */}
+      <Page size="A4" style={styles.coverPage}>
+        <View style={styles.borderContainer}>
+          <View style={styles.innerBorderContainer}>
+            <View style={styles.coverHeader}>
+              {/* Top border decoration line */}
+              <View style={{ borderBottomWidth: 1.5, borderBottomColor: '#000000', width: '100%', marginBottom: 30 }} />
+              
+              <Text style={styles.coverTitle}>Deed of Assignment</Text>
+              
+              <Text style={styles.coverLabel}>Between</Text>
+              
+              <Text style={styles.coverParty}>Davidorlah Nigeria Limited</Text>
+              <Text style={[styles.coverLabel, { marginTop: 0 }]}>(Assignor)</Text>
+              
+              <Text style={styles.coverLabel}>And</Text>
+              
+              <View style={styles.coverAssigneesBlock}>
+                <Text style={styles.coverAssigneeName}>1. {assignee1Upper}</Text>
+                {assignee2Upper && (
+                  <Text style={styles.coverAssigneeName}>2. {assignee2Upper}</Text>
+                )}
+              </View>
+              <Text style={[styles.coverLabel, { marginTop: 0 }]}>(Assignees)</Text>
+            </View>
+
+            <View style={{ width: '100%', alignItems: 'center' }}>
+              <View style={styles.horizontalLine} />
+              
+              <View style={styles.coverPropertyBlock}>
+                <Text style={styles.coverLabel}>In Respect Of</Text>
+                <Text style={styles.coverPropertyText}>
+                  {plotsText} of Farmland Measuring {sqmts.toLocaleString()} Sqmts at Iloti Family Farmland at Orubo/Erilobi Alaye Village, Awori, Ago-Iwoye, in the Ijebu North Local Government Area, Ogun State.
+                </Text>
+              </View>
+              
+              <View style={styles.horizontalLine} />
+            </View>
+
+            <View style={styles.coverFooterRow}>
+              <View style={styles.coverLawyerCol}>
+                <Text style={{ fontFamily: 'Times-Bold', marginBottom: 2 }}>Prepared by:</Text>
+                <Text style={{ fontFamily: 'Times-Bold' }}>Ayomide Adeosun Esq.</Text>
+                <Text style={{ fontFamily: 'Times-Bold' }}>OLAOSEBIKAN ADEOSUN & CO.</Text>
+                <Text style={styles.italic}>(Legal Practitioners & Notary Public)</Text>
+                <Text>Suite B17, Glory Complex</Text>
+                <Text>229 Ikotun-Idimu Road</Text>
+                <Text>Idimu, Lagos.</Text>
+                <Text>olaosebikanadeosun15@gmail.com</Text>
+                <Text>07068971207</Text>
+              </View>
+
+              <View style={styles.coverSealsCol}>
+                {/* Lawyer Stamp Placeholder */}
+                <View style={styles.placeholderStampCircle}>
+                  <Text style={styles.placeholderStampText}>NBA</Text>
+                  <Text style={[styles.placeholderStampText, { fontSize: 4 }]}>STAMP</Text>
+                </View>
+                {/* NBA Seal Placeholder */}
+                <View style={styles.placeholderStampCircle}>
+                  <Text style={styles.placeholderStampText}>FIRM</Text>
+                  <Text style={[styles.placeholderStampText, { fontSize: 4 }]}>SEAL</Text>
+                </View>
+                {/* Red wax seal */}
+                <StarburstSeal size={65} />
+              </View>
+            </View>
+          </View>
+        </View>
+      </Page>
+
+      {/* PAGE 2: BODY PAGE 1 */}
       <Page size="A4" style={styles.page}>
-        {/* Title Page Heading */}
-        <Text style={styles.title}>Deed of Assignment</Text>
+        <Text style={styles.pageNumber}>Page 1 of 3</Text>
         
-        <Text style={styles.paragraph}>
-          THIS DEED OF ASSIGNMENT is made this <Text style={styles.bold}>{dateStr}</Text>
+        <Text style={styles.paragraphNoIndent}>
+          THIS DEED OF ASSIGNMENT is made this <Text style={styles.bold}>{formattedDay}</Text> day of <Text style={styles.bold}>{data.month}</Text>, <Text style={styles.bold}>{data.year}</Text>.
         </Text>
 
-        <Text style={[styles.paragraph, styles.bold]}>BETWEEN:</Text>
+        <Text style={styles.boldCenter}>Between</Text>
         
-        <Text style={styles.paragraph}>
-          <Text style={styles.bold}>DAVIDORLAH FARMS LIMITED</Text>, a company incorporated under the laws of the Federal Republic of Nigeria, with its registered address at Davidorlah Farm Plaza, Lagos, Nigeria (hereinafter referred to as the <Text style={styles.bold}>"ASSIGNOR"</Text> which expression shall where the context so admits include its successors-in-title and assigns) of the one part;
+        <Text style={styles.paragraphNoIndent}>
+          <Text style={styles.bold}>DAVIDORLAH NIGERIA LIMITED</Text> of Km 18, Lekki Epe Expressway, Osapa Lekki, Lagos State (hereinafter referred to as <Text style={styles.italic}>"the Assignor"</Text> which expression shall where the context so admits include its lawful assigns and legal representatives) of the one part.
         </Text>
 
-        <Text style={[styles.paragraph, styles.bold]}>AND:</Text>
+        <Text style={styles.boldCenter}>And</Text>
 
-        <Text style={styles.paragraph}>
-          <Text style={styles.bold}>{buyerNames}</Text> of <Text style={styles.bold}>{data.address}</Text> (hereinafter referred to as the <Text style={styles.bold}>"ASSIGNEE"</Text> which expression shall where the context so admits include heirs, executors, administrators, and assigns) of the other part.
-        </Text>
-
-        <View style={styles.section}>
-          <Text style={styles.heading}>WHEREAS:</Text>
-          <Text style={styles.paragraph}>
-            1. The Assignor is the beneficial owner of the agricultural parcel of land located at the Davidorlah Farms Estate scheme, Lagos State, Nigeria.
-          </Text>
-          <Text style={styles.paragraph}>
-            2. The Assignor has agreed to assign a portion of the agricultural parcel measuring approximately <Text style={styles.bold}>{data.plots} plots</Text> to the Assignee for agricultural use.
-          </Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.heading}>NOW THIS DEED WITNESSETH AS FOLLOWS:</Text>
-          
-          <Text style={styles.paragraph}>
-            1. In consideration of the sum of <Text style={styles.bold}>{totalAmountWords}</Text> paid by the Assignee to the Assignor (receipt of which the Assignor hereby acknowledges), the Assignor hereby assigns unto the Assignee all those agricultural plots measuring <Text style={styles.bold}>{data.plots} plots</Text> at the Davidorlah Farms Estate.
-          </Text>
-          
-          <Text style={styles.paragraph}>
-            2. The Assignee covenants to use the land solely for agricultural and farming operations under the terms of the Davidorlah Farm Management Agreement.
-          </Text>
-
-          <Text style={styles.paragraph}>
-            3. The Assignor covenants that it has good right and title to assign the said land and that the Assignee shall quietly enjoy possession of the same without interruption.
-          </Text>
-        </View>
-
-        {/* Transaction Info Table */}
-        <View style={styles.table}>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCellLabel}>Land Area Assigned</Text>
-            <Text style={styles.tableCellVal}>{data.plots} Plot(s)</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCellLabel}>Consideration Paid</Text>
-            <Text style={styles.tableCellVal}>{totalAmountWords}</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCellLabel}>Payment Mode</Text>
-            <Text style={styles.tableCellVal}>{data.paymentType === 'full' ? 'Outright Purchase (Full)' : 'Installment Payment Plan'}</Text>
-          </View>
-          {data.paymentType === 'installment' && (
-            <>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLabel}>Initial Deposit Paid</Text>
-                <Text style={styles.tableCellVal}>₦{Number(data.depositAmount || 0).toLocaleString()} Naira</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLabel}>Installment Duration</Text>
-                <Text style={styles.tableCellVal}>{data.duration}</Text>
-              </View>
-            </>
+        <View style={{ marginBottom: 12 }}>
+          <Text style={styles.bold}>1. {assignee1Upper}</Text>
+          {assignee2Upper && (
+            <Text style={styles.bold}>2. {assignee2Upper}</Text>
           )}
         </View>
 
-        {/* Signatures */}
-        <View style={styles.signatureContainer}>
-          <View style={styles.signatureBlock}>
-            <Text style={styles.bold}>DAVIDORLAH FARMS LTD</Text>
-            <Text style={{ marginTop: 25 }}>For: The Assignor</Text>
+        <Text style={styles.paragraphNoIndent}>
+          of <Text style={styles.bold}>{addressUpper}</Text>
+        </Text>
+
+        <Text style={styles.paragraphNoIndent}>
+          (hereinafter referred to as <Text style={styles.italic}>"the Assignees"</Text> which expression shall where the context so admits include their heirs, successors-in-title and assigns) of the other part.
+        </Text>
+
+        <View style={{ marginTop: 12 }}>
+          <Text style={styles.sectionHeading}>1.0. WHEREAS:</Text>
+          
+          <View style={styles.clauseList}>
+            <View style={styles.clauseRow}>
+              <Text style={styles.clauseIndex}>i.</Text>
+              <Text style={styles.clauseText}>
+                The hereditament subject matter of this assignment forms part of a vast Parcel of Land known and described as Iloti Family Farmland at Orubo/Erilobi Alaye Village, Awori, Ago-Iwoye, Ijebu North Local Government Area of Ogun State of Nigeria which originally belonged to Iloti Family by virtue of inheritance under Yoruba Native Laws and Custom.
+              </Text>
+            </View>
+
+            <View style={styles.clauseRow}>
+              <Text style={styles.clauseIndex}>ii.</Text>
+              <Text style={styles.clauseText}>
+                The said Iloti family transferred their interest in respect of a portion of the vast area of land aforesaid to the Assignor herein absolutely by outright sale and executed a Deed of Assignment in favour of the Assignor evidencing the sale for pineapple farming purposes only.
+              </Text>
+            </View>
+
+            <View style={styles.clauseRow}>
+              <Text style={styles.clauseIndex}>iii.</Text>
+              <Text style={styles.clauseText}>
+                The Assignees being desirous of acquiring interest in <Text style={styles.bold}>{plotsText}</Text> out of the large expanse of farmland sold by the Iloti Family to the Assignor, have offered to purchase and the Assignor has agreed to sell and/or assign same to the Assignees subject to the terms and conditions hereinafter appearing.
+              </Text>
+            </View>
           </View>
-          <View style={styles.signatureBlock}>
-            <Text style={styles.bold}>{data.assignee1}</Text>
-            <Text style={{ marginTop: 25 }}>The Assignee</Text>
+        </View>
+      </Page>
+
+      {/* PAGE 3: BODY PAGE 2 */}
+      <Page size="A4" style={styles.page}>
+        <Text style={styles.pageNumber}>Page 2 of 3</Text>
+
+        <Text style={styles.sectionHeading}>2.0. NOW THIS DEED WITNESSETH as follows:</Text>
+        
+        <Text style={styles.paragraphNoIndent}>
+          In pursuance of the said agreement and in consideration of the sum of <Text style={styles.bold}>{priceInFigures} ({priceInWords})</Text> only paid by the Assignees to the Assignor (the receipt whereof the Assignor hereby acknowledges) the Assignor being the <Text style={styles.bold}>BENEFICIAL OWNER</Text> hereby sells, conveys and/or assigns unto the Assignees <Text style={styles.bold}>ALL THAT {plotsText.toUpperCase()} OF FARMLAND</Text> measuring <Text style={styles.bold}>{sqmts.toLocaleString()} square metres</Text> lying, being and situate at Iloti Family farmland, Orubo/Erilobi Alaye Village, Awori, Ago-Iwoye, Ijebu North Local Government Area of Ogun State (hereinafter referred to as <Text style={styles.italic}>"the Assigned Property"</Text>) with all rights and things appurtenant to it <Text style={styles.bold}>TO HOLD</Text> the same unto the Assignees free from encumbrance.
+        </Text>
+
+        <Text style={styles.sectionHeading}>3.0. THE ASSIGNOR HEREBY COVENANTS WITH THE ASSIGNEES as follows:</Text>
+
+        <View style={styles.clauseList}>
+          <View style={styles.clauseRow}>
+            <Text style={styles.clauseIndex}>i.</Text>
+            <Text style={styles.clauseText}>
+              The Assignor hereby confirms that it has valid title to the assigned property.
+            </Text>
+          </View>
+
+          <View style={styles.clauseRow}>
+            <Text style={styles.clauseIndex}>ii.</Text>
+            <Text style={styles.clauseText}>
+              That the Assignees and/or anybody authorized by them shall have the right to utilise the assigned property for farming purpose only (ruga exempted) but without prejudice to any subsisting contractual agreement between the Assignor and the Assignees.
+            </Text>
+          </View>
+
+          <View style={styles.clauseRow}>
+            <Text style={styles.clauseIndex}>iii.</Text>
+            <Text style={styles.clauseText}>
+              To at all times indemnify the Assignees for any costs, losses, and expenses the Assignees may incur due to any defect in the Assignor's title to the assigned property or encumbrance placed on the property by the Assignor prior to the execution of this agreement.
+            </Text>
+          </View>
+        </View>
+      </Page>
+
+      {/* PAGE 4: BODY PAGE 3 / SIGNATURES */}
+      <Page size="A4" style={styles.page}>
+        <Text style={styles.pageNumber}>Page 3 of 3</Text>
+
+        <Text style={[styles.paragraphNoIndent, { marginBottom: 16 }]}>
+          IN WITNESS WHEREOF the parties hereto have hereunto set their hands and seals the day and year first above written.
+        </Text>
+
+        <View style={styles.executionContainer}>
+          <Text style={styles.paragraphNoIndent}>
+            The Common Seal of the ASSIGNOR <Text style={styles.bold}>DAVIDORLAH NIGERIA LIMITED</Text> is hereby affixed in the presence of:
+          </Text>
+
+          {/* Center Red Wax Stamp */}
+          <View style={{ alignItems: 'center', marginVertical: 14 }}>
+            <StarburstSeal size={80} />
+          </View>
+
+          <View style={styles.signGroupRow} wrap={false}>
+            <View style={styles.signLineCol}>
+              <View style={styles.signLine} />
+              <Text style={styles.signLabel}>Director</Text>
+            </View>
+            <View style={styles.signLineCol}>
+              <View style={styles.signLine} />
+              <Text style={styles.signLabel}>Secretary</Text>
+            </View>
+          </View>
+
+          <View style={{ marginTop: 18 }}>
+            <Text style={styles.bold}>SIGNED, SEALED AND DELIVERED</Text>
+            <Text style={styles.paragraphNoIndent}>By the within-named ASSIGNEES:</Text>
+
+            <View style={{ marginTop: 8 }}>
+              {/* Assignee 1 Row */}
+              <View style={styles.assigneeSignRow} wrap={false}>
+                <View style={styles.assigneeTextCol}>
+                  <Text style={styles.bold}>1. {assignee1Upper}</Text>
+                </View>
+                <View style={styles.assigneeSignCol}>
+                  <View style={styles.assigneeSignLine} />
+                  <View style={styles.redWaxCircle} />
+                </View>
+              </View>
+
+              {/* Assignee 2 Row (Conditional) */}
+              {assignee2Upper && (
+                <View style={styles.assigneeSignRow} wrap={false}>
+                  <View style={styles.assigneeTextCol}>
+                    <Text style={styles.bold}>2. {assignee2Upper}</Text>
+                  </View>
+                  <View style={styles.assigneeSignCol}>
+                    <View style={styles.assigneeSignLine} />
+                    <View style={styles.redWaxCircle} />
+                  </View>
+                </View>
+              )}
+              
+              <Text style={[styles.bold, { textAlign: 'right', marginRight: 48, fontSize: 10, marginTop: 4 }]}>
+                ASSIGNEES
+              </Text>
+            </View>
+          </View>
+
+          {/* Witness Details */}
+          <View style={styles.witnessSection} wrap={false}>
+            <Text style={styles.bold}>In the presence of:</Text>
+            <Text style={styles.witnessLine}>Name: ........................................................................................</Text>
+            <Text style={styles.witnessLine}>Address: .....................................................................................</Text>
+            <Text style={styles.witnessLine}>Occupation: .................................................................................</Text>
+            <Text style={styles.witnessLine}>Signature: ..................................................................................</Text>
+          </View>
+
+          {/* Governor Consent Box */}
+          <View style={styles.consentBox} wrap={false}>
+            <Text style={styles.consentTitle}>Consent</Text>
+            <Text style={styles.consentText}>I, Hereby Consent to the Transaction Herein Contained</Text>
+            <Text style={styles.consentDateLine}>Dated this __________ day of ____________________ 20___</Text>
+            
+            <View style={{ borderTopWidth: 1.5, borderTopColor: '#000000', width: 280, marginTop: 24, paddingTop: 4 }}>
+              <Text style={styles.consentFooter}>Hon. Attorney General and Commissioner for Justice</Text>
+              <Text style={styles.consentFooterSub}>For: The Executive Governor of Ogun State.</Text>
+            </View>
           </View>
         </View>
       </Page>
