@@ -1,0 +1,14 @@
+{
+  "name": "Maadan Dev Tools",
+  "short_name": "Maadan Dev",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "theme_color": "#050505",
+  "background_color": "#050505",
+  "display": "standalone"
+}
