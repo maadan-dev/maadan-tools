@@ -234,6 +234,12 @@ export default function DavidorlahGenerator() {
 
       {/* Main Form Dashboard */}
       <div className="w-full max-w-6xl mx-auto px-6 md:px-12 flex-grow py-12 relative z-10">
+        {/* Legal Disclaimer */}
+        <div className="mb-8 p-4 rounded-2xl bg-zinc-950/40 border border-zinc-900 text-zinc-400 text-xs leading-relaxed font-mono max-w-3xl">
+          <span className="text-[#7AB648] font-bold uppercase tracking-wider text-[9px] block mb-1">⚠️ Legal Disclaimer</span>
+          This tool generates draft documents for internal use only. Documents require legal review and authorized signatures before they are valid.
+        </div>
+
         <form onSubmit={handleGenerate} className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-12 items-start">
           
           {/* Left Column (55% / Flex-grow Form) */}
