@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://tools.maadan.dev'),
   title: {
-    default: 'Maadan Dev · Business Automation Tools',
-    template: '%s | Maadan Dev Tools',
+    default: 'Maadan Tools · Business Automation',
+    template: '%s | Maadan Tools',
   },
   description:
     'Auto-generate customized Deed of Assignment, Farm Management Agreement, and legal business templates for Nigerian operations.',
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://tools.maadan.dev/',
     siteName: 'Maadan Dev',
-    title: 'Maadan Dev · Business Automation Tools',
+    title: 'Maadan Tools · Business Automation',
     description:
       'Auto-generate customized Deed of Assignment, Farm Management Agreement, and legal business templates for Nigerian operations.',
     images: [
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
         url: '/logo_horizontal.png',
         width: 800,
         height: 200,
-        alt: 'Maadan Dev Tools',
+        alt: 'Maadan Tools',
       },
     ],
   },
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: 'summary',
     site: '@maadan_dev',
     creator: '@maadan_dev',
-    title: 'Maadan Dev · Business Automation Tools',
+    title: 'Maadan Tools · Business Automation',
     description:
       'Auto-generate customized legal business templates for Nigerian operations.',
     images: ['/logo_horizontal.png'],
@@ -89,7 +89,7 @@ export default function RootLayout({
                 "@type": "WebSite",
                 "@id": "https://tools.maadan.dev/#website",
                 "url": "https://tools.maadan.dev/",
-                "name": "Maadan Dev Tools",
+                "name": "Maadan Tools",
                 "publisher": {
                   "@type": "Person",
                   "@id": "https://www.maadan.dev/#person",
