@@ -79,6 +79,28 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "WebSite",
+                "@id": "https://tools.maadan.dev/#website",
+                "url": "https://tools.maadan.dev/",
+                "name": "Maadan Dev Tools",
+                "publisher": {
+                  "@type": "Person",
+                  "@id": "https://www.maadan.dev/#person",
+                  "name": "Abdulyekeen Maadan",
+                  "url": "https://www.maadan.dev/"
+                }
+              }
+            ]
+          })
+        }}
+      />
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
