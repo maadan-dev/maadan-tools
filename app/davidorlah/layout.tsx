@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: 'Davidorlah Farms Document Generator',
   description:
     'Instantly generate custom Deed of Assignment and Farm Management Agreements with legal coordinates for Davidorlah Nigeria Limited farm plots.',
+  robots: 'noindex, nofollow',
   alternates: {
     canonical: '/davidorlah',
   },
